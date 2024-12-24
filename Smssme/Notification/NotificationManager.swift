@@ -45,30 +45,7 @@ class NotificationManager {
     //    }
     
     // 마이페이지 알림 토글 활성화 설정
-    func setNotificationEnabled(userID: String?) {
-        if let userId = userID {
-            FirebaseFirestoreManager.shared.fetchUserData(uid: userId) { [weak self] result in
-                switch result {
-                case .success(let data):
-                    if let isEnabled = data["notificationsEnabled"] as? Bool , isEnabled {
-                        // 알림 설정이 활성화된 경우
-                        self?.everyDayNotificaion()
-                        self?.firstDayOfMonthNotification()
-                        self?.lastDayOfMonthNotification()
-                    }
-                case .failure(let error):
-                    print("사용자 데이터를 가져오는 도중 오류 발생:\(error.localizedDescription)")
-                }
-            }
-        } else {
-            // 비회원 로그인 시 알림 설정
-            self.everyDayNotificaion()
-            self.firstDayOfMonthNotification()
-            self.lastDayOfMonthNotification()
-        }
-        
-        
-    }
+
     
     // 알림 생성
     func createNotification(identifier: String, title: String, body: String, trigger: UNNotificationTrigger?, repeats: Bool) {

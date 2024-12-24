@@ -6,7 +6,6 @@
 //
 
 import DGCharts
-import FirebaseAuth
 import SafariServices
 import UIKit
 
@@ -17,13 +16,9 @@ class MainPageVC: UIViewController {
     private let financialPlanManager = FinancialPlanManager.shared
     private let diaryCoreDataManager = DiaryCoreDataManager.shared
     var dataEntries: [PieChartDataEntry] = []
-    var userData = UserData()
-    
-    //경제 지표
-    lazy var stockIndexDataArray: [StockIndexData] = []
     
     
-    //MARK: - Life cycle
+    
     init() {
         super.init(nibName: nil, bundle: nil)
     }
@@ -36,8 +31,8 @@ class MainPageVC: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         
-        setupStockData()
-        setupWelcomeTitle()
+
+        
         setupTableView()
     }
     
@@ -52,10 +47,10 @@ class MainPageVC: UIViewController {
         
         self.navigationController?.isNavigationBarHidden = true
         
-        setupWelcomeTitle()
-        setupCollectionView()
+        
+
         setChart()
-//        requestNotification()
+        //        requestNotification()
     }
     
     //MARK: - Methods
@@ -70,45 +65,24 @@ class MainPageVC: UIViewController {
         mainPageView.benefitVerticalTableView.register(BenefitVerticalCell.self, forCellReuseIdentifier: "BenefitVerticalCell")
     }
     
-    private func setupWelcomeTitle() {
-        // 현재 로그인한 사용자 정보
-        if let uid = Auth.auth().currentUser?.uid {
-            FirebaseFirestoreManager.shared.fetchUserData(uid: uid) { result in
-                switch result {
-                case .success(let data):
-                    if let nickname = data["nickname"] as? String {
-                        DispatchQueue.main.async {
-                            self.mainPageView.mainWelcomeTitleLabel.text = "환영합니다 \n\(nickname) 님"
-                        }
-                    } else {
-                        print("닉네임을 찾을 수 없습니다.")
-                    }
-                case .failure(let error):
-                    self.showAlert(message: "데이터를 가져오는 도중 오류 발생: \(error.localizedDescription)", AlertTitle: "에러발생", buttonClickTitle: "확인")
-                }
-            }
-        } else {
-            print("로그인 정보가 없습니다.")
-        }
-    }
     
     // 알림 권한 요청
-//    private func requestNotification() {
-//        NotificationManager.shared.requestAuthorization { [weak self] granted in
-//            DispatchQueue.main.async {
-//                  if granted {
-//                      // 알림 권한이 허용된 경우
-//                      print("알림 권한이 허용되었습니다.")
-//                      NotificationManager.shared.setNotificationEnabled(userID: Auth.auth().currentUser?.uid)
-//                  } else {
-//                      // 알림 권한이 거부된 경우
-//                      print("알림 권한이 거부되었습니다.")
-//                      // 알림 비활성화 시 알림 취소
-//                      NotificationManager.shared.cancelAllNotifications()
-//                  }
-//              }
-//        }
-//    }
+    //    private func requestNotification() {
+    //        NotificationManager.shared.requestAuthorization { [weak self] granted in
+    //            DispatchQueue.main.async {
+    //                  if granted {
+    //                      // 알림 권한이 허용된 경우
+    //                      print("알림 권한이 허용되었습니다.")
+    //                      NotificationManager.shared.setNotificationEnabled(userID: Auth.auth().currentUser?.uid)
+    //                  } else {
+    //                      // 알림 권한이 거부된 경우
+    //                      print("알림 권한이 거부되었습니다.")
+    //                      // 알림 비활성화 시 알림 취소
+    //                      NotificationManager.shared.cancelAllNotifications()
+    //                  }
+    //              }
+    //        }
+    //    }
     
     func setChart() {
         // 차트에서 표현할 데이터 리스트
@@ -184,204 +158,9 @@ class MainPageVC: UIViewController {
         navigationController?.pushViewController(AssetsListVC(), animated: true)
     }
     
-    //MARK: - 경제지표 API 호출
-    func setupStockData() {
-        //날짜 포멧
-        let dateFormatter = DateFormatter()
-        
-        fetchKOSPIData(idxNm: "코스피")
-        fetchKOSPIData(idxNm: "코스닥")
-        fetchSP500Last7Days()
-        
-        //MARK: - 코스피 데이터 가져오는 메서드
-        func fetchKOSPIData(idxNm: String){
-            //날짜 변환 및 날짜 구하기
-            dateFormatter.dateFormat = "yyyyMMdd"
-            
-            // 오늘 날짜와 7일 전 날짜를 계산
-            let today = Date()
-            guard let sevenDaysAgo = Calendar.current.date(byAdding: .day, value: -7, to: today) else {
-                print("코스피 7일 전 날짜 구하기 오류")
-                return
-            }
-            
-            let todayString = dateFormatter.string(from: today)
-            let sevenDaysAgoString = dateFormatter.string(from: sevenDaysAgo)
-            
-            print("코스피 오늘 날짜: \(todayString)")
-            print("코스피 일주일 전 날짜: \(sevenDaysAgoString)")
-            
-            guard let serviceKey = Bundle.main.object(forInfoDictionaryKey: "PUBLIC_DATA_API_KEY") as? String else {return}
-            
-            let endpoint = Endpoint(
-                baseURL: "https://apis.data.go.kr",
-                path: "/1160100/service/GetMarketIndexInfoService/getStockMarketIndex",
-                queryParameters: [
-                    "serviceKey": serviceKey,
-                    "resultType": "json",
-                    "idxNm": idxNm,
-                    "beginBasDt": sevenDaysAgoString,
-                    "endBasDt": todayString
-                ]
-            )
-            
-            NetworkManager.shared.fetch(endpoint: endpoint) { [weak self] (result: Result< KOSPIResponse, Error>) in
-                
-                guard let self = self else { return } // self가 nil일 경우 클로저를 종료
-                
-                switch result {
-                case .success(let response):
-                    
-                    let items = response.response.body.items.item
-                    if let latestItem = items.max(by: {$0.basDt < $1.basDt}) {
-                        
-                        let date = RegexManager.shared.formatDateString(from: latestItem.basDt)
-                        print(date)
-                        
-                        let kospiItem = StockIndexData.convertKOSPIToStockIndex(kospiItem: latestItem)
-                        self.stockIndexDataArray.append(kospiItem)
-                        
-                        DispatchQueue.main.async {
-                            self.mainPageView.stockIndexDateLabel.text = "\(date) 기준"
-                            self.mainPageView.stockIndexcollectionView.reloadData()
-                        }
-                        
-                    } else {
-                        print("가져온 코스피 데이터가 없습니다.")
-                    }
-                    
-                case .failure(let error):
-                    print("코스피 데이터 가져오기 실패 \(error)")
-                }
-            }
-        }
-        
-        //MARK: - S&P500 데이터 가져오는 메서드
-        func fetchSP500Last7Days() {
-            
-            //날짜 변환 및 날짜 구하기
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            
-            // 오늘 날짜와 7일 전 날짜를 계산
-            let today = Date()
-            guard let sevenDaysAgo = Calendar.current.date(byAdding: .day, value: -7, to: today) else {
-                print("S&P500 7일 전 날짜 구하기 오류")
-                return
-            }
-            
-            let todayString = dateFormatter.string(from: today)
-            let sevenDaysAgoString = dateFormatter.string(from: sevenDaysAgo)
-            
-            guard let api_key = Bundle.main.object(forInfoDictionaryKey: "FRED_API_KEY") as? String else {return}
-            
-            // 오늘의 S&P 500 데이터를 가져오기 위한 URL 요청 구성
-            let endpoint = Endpoint(
-                baseURL: "https://api.stlouisfed.org",
-                path: "/fred/series/observations",
-                queryParameters: [
-                    "series_id": "SP500",
-                    "api_key": api_key,
-                    "start_date": sevenDaysAgoString,
-                    "end_date": todayString,
-                    "file_type": "json",
-                    "limit": "7",
-                    "sort_order": "desc"
-                ]
-            )
-            
-            //NetworkManager를 통해 데이터 기져오기
-            NetworkManager.shared.fetch(endpoint: endpoint) { [weak self] (result: Result<SP500Response, Error>) in
-                switch result {
-                case .success(let response):
-                    print("거래 데이터를 가져오는데 성공했습니다.")
-                    processSP500Data(response: response)
-                    
-                case .failure(let error):
-                    print("거래 데이터를 가져오는데 실패했습니다:\n \(error.localizedDescription)")
-                }
-            }
-        }
-        
-        //MARK: - S&P500 가장 최근의 데이터 찾는 메서드
-        func processSP500Data(response: SP500Response) {
-            // 최근 7일간의 데이터를 역순으로 정렬 (desc로 요청했기 때문에 이미 정렬되어 있음)
-            let observations = response.observations.sorted { $0.date > $1.date }
-            
-            // 최근 7일 중 가장 최신 데이터와 전날 데이터 추출
-            guard observations.count > 1 else {
-                print("최근 7일 동안 충분한 S&P 500 데이터가 없습니다.")
-                return
-            }
-            
-            // 최신 데이터와 그 전날 데이터를 가져옵니다
-            let latestObservation = observations[0]
-            let previousObservation = observations[1]
-            
-            let latestValueString = latestObservation.value
-            guard let latestValue = Double(latestValueString) else {
-                print("가장 최신 S&P 500 데이터를 숫자로 변환할 수 없습니다.")
-                return
-            }
-            
-            let previousValueString = previousObservation.value
-            guard let previousValue = Double(previousValueString) else {
-                print("전일 S&P 500 데이터를 숫자로 변환할 수 없습니다.")
-                return
-            }
-            
-            // 등락 포인트와 비율 계산
-            let change = latestValue - previousValue
-            let changePercentage = (change / previousValue) * 100
-            
-            // 가장 최신 S&P 500 지수
-            let sp500ValueString = String(format: "%.2f", latestValue)
-            
-            // 전일 대비 등락 비율
-            let changeRateString = String(format: "%.2f", changePercentage)
-            
-            // 전일 대비 등락 포인트
-            let changePointString = String(format: "%.2f", change)
-            
-            let sp500Item = StockIndexData.convertSP500OToStockIndex(value: sp500ValueString, changeRate: changeRateString, changePoint: changePointString, date: latestObservation.date)
-            
-            self.stockIndexDataArray.append(sp500Item)
-            
-            DispatchQueue.main.async{
-                self.mainPageView.stockIndexcollectionView.reloadData()
-            }
-        }
-        
-        //MARK: - 환율 데이터 가져오는 메서드
-        
-    }
-    
 }
 
-//MARK: - 주요 경제 지표 API 데이터
-extension MainPageVC: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    func setupCollectionView() {
-        mainPageView.stockIndexcollectionView.dataSource = self
-        //        mainPageView.stockIndexcollectionView.delegate = self
-    }
-    
-    //MARK: - UICollectionView DataSource
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return stockIndexDataArray.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: StockIndexCell.reuseIdentifier, for: indexPath) as! StockIndexCell
-        
-        // 배열에서 해당 데이터 가져오기
-        let stockIndexData = stockIndexDataArray[indexPath.item]
-        
-        // 셀에 데이터 전달 및 라벨 표시
-        cell.configure(stockIndexData: stockIndexData)
-        
-        return cell
-    }
-    
-}
+
 
 extension MainPageVC: UITabBarDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

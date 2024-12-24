@@ -2,20 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-		<key>NSExceptionDomains</key>
-		<dict>
-			<key>https://apis.data.go.kr/1160100/service/GetMarketIndexInfoService/getStockMarketIndex</key>
-			<dict/>
-			<key>NSExceptionAllowsInsecureHTTPLoads</key>
-			<true/>
-			<key>NSIncludesSubdomains</key>
-			<true/>
-		</dict>
-	</dict>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -28,6 +14,21 @@
 		</dict>
 		<dict/>
 	</array>
+	<key>EXCHANGE_RATE_API_KEY</key>
+	<string>${EXCHANGE_RATE_API_KEY}</string>
+	<key>FRED_API_KEY</key>
+	<string>${FRED_API_KEY}</string>
+	<key>KAKAO_APP_KEY</key>
+	<string>$(KAKAO_APP_KEY)</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSExceptionDomains</key>
+		<dict/>
+	</dict>
+	<key>PUBLIC_DATA_API_KEY</key>
+	<string>${PUBLIC_DATA_API_KEY}</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -45,13 +46,5 @@
 			</array>
 		</dict>
 	</dict>
-	<key>KAKAO_APP_KEY</key>
-	<string>$(KAKAO_APP_KEY)</string>
-	<key>EXCHANGE_RATE_API_KEY</key>
-	<string>${EXCHANGE_RATE_API_KEY}</string>
-	<key>FRED_API_KEY</key>
-	<string>${FRED_API_KEY}</string>
-	<key>PUBLIC_DATA_API_KEY</key>
-	<string>${PUBLIC_DATA_API_KEY}</string>
 </dict>
 </plist>
