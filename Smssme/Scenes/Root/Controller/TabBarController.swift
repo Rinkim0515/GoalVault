@@ -5,14 +5,13 @@
 //  Created by 전성진 on 8/28/24.
 //
 
-import FirebaseAuth
 import UIKit
 
 // MARK: - 기본 제공 탭바 아이콘 위치가 너무 상단이라 커스텀
 class CustomTabBar: UITabBar {
+    
     override func layoutSubviews() {
         super.layoutSubviews()
-        
         let tabBarItemHeight: CGFloat = 32.0 // 아이콘의 높이
         let bottomInset: CGFloat = 48.0 // 아이콘을 아래로 내릴 거리
         
@@ -31,7 +30,6 @@ class TabBarController: UITabBarController {
         tabBar.backgroundColor = .white
         tabBar.itemPositioning = .centered
         configureController()
-        showFirstView()
         self.setValue(customTabBar, forKey: "tabBar")
     }
     
@@ -83,14 +81,8 @@ class TabBarController: UITabBarController {
             isNavigationBarHidden: true,
             rootViewController: FutureGraphVC()
         )
-        
-        let myPage = tabBarNavigationController(
-            unselectedImage: UIImage(systemName: "person.fill") ?? UIImage(),
-            selectedImage: UIImage(systemName: "person.fill") ?? UIImage(),
-            isNavigationBarHidden: false,
-            rootViewController: MypageVC()
-        )
-        viewControllers = [mainPage, diary, financialPlan, futureGraph, myPage]
+
+        viewControllers = [mainPage, diary, financialPlan, futureGraph]
     }
     
     //MARK: 제네릭으로 navigationController 안쓰는 뷰면 나눠서 반환해주게끔 개선 하면 좋을거 같음
@@ -106,15 +98,6 @@ class TabBarController: UITabBarController {
 
 // MARK: - 페이지 분기 처리
 extension TabBarController {
-    // 로그인 유무에 따라 앱 실행 시 처음 보여줄 탭 설정
-    private func showFirstView() {
-        if let user  = Auth.auth().currentUser {
-            self.selectedViewController = viewControllers?[0]
-        } else {
-            self.selectedViewController = viewControllers?[2]
-        }
-    }
-    
     // 진행중 플랜이 있다면 막대그래프 페이지, 아니면 선택창
     private func planPageCondition() -> UIViewController {
         let planService = FinancialPlanService()

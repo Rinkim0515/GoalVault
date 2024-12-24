@@ -44,33 +44,6 @@ class MainPageView: UIView {
         return view
     }()
     
-    //경제지표 컬렉션뷰
-    lazy var stockIndexcollectionView: UICollectionView = {
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: createCollectionViewLayout())
-        collectionView.register(StockIndexCell.self, forCellWithReuseIdentifier: StockIndexCell.reuseIdentifier)
-        collectionView.showsHorizontalScrollIndicator = false
-        
-        return collectionView
-    }()
-    
-    private func createCollectionViewLayout() -> UICollectionViewLayout {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
-        layout.minimumLineSpacing = 8
-        
-        // 화면 너비에 따라 셀 너비 동적으로 대응하게
-        let screenWidth = UIScreen.main.bounds.width
-        let contentInset: CGFloat = 32
-        let spaceBetweenItems: CGFloat = 16
-        let availableWidth = screenWidth - contentInset - spaceBetweenItems
-        // 제공 항목이 3개 = 3등분하여 소수점 아래 버림
-        let itemWidth = (availableWidth / 3).rounded(.down)
-        
-        layout.itemSize = CGSize(width: itemWidth, height: 80)
-        layout.estimatedItemSize = CGSize(width: itemWidth, height: 80)
-        
-        return layout
-    }
     
     let pieChartView: PieChartView = {
         let pieChartView = PieChartView()
@@ -114,8 +87,7 @@ class MainPageView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Methods
-    // MARK: - 청년 혜택 총정리
+
     func entryData(values: [Double]) -> [ChartDataEntry] {
         var pieDataEntries: [ChartDataEntry] = []
         for i in 0 ..< values.count {
@@ -126,7 +98,7 @@ class MainPageView: UIView {
         return pieDataEntries
     }
     
-    // MARK: - Private Methods
+
     private func setupUI() {
         // 스크롤 뷰 추가
         [scrollView].forEach {
@@ -143,9 +115,7 @@ class MainPageView: UIView {
             totalAssetsValueLabel,
             pieChartView,
             chartCenterButton,
-            stockIndexTitleLabel,
             stockIndexDateLabel,
-            stockIndexcollectionView,
             benefitTitleLabel,
             benefitVerticalTableView
         ].forEach {
@@ -188,35 +158,15 @@ class MainPageView: UIView {
             $0.height.equalTo(120)
             $0.width.equalTo(120)
         }
-        
-        stockIndexTitleLabel.snp.makeConstraints {
-            $0.top.equalTo(pieChartView.snp.bottom).offset(28)
-            $0.leading.equalTo(safeAreaLayoutGuide).offset(20)
-            $0.width.equalTo(100)
-        }
-        
-        stockIndexDateLabel.snp.makeConstraints {
-            $0.centerY.equalTo(stockIndexTitleLabel.snp.centerY)
-            $0.trailing.equalTo(safeAreaLayoutGuide).offset(-20)
-            $0.width.equalTo(150)
-        }
-        
-        stockIndexcollectionView.snp.makeConstraints {
-            $0.top.equalTo(stockIndexTitleLabel.snp.bottom).offset(16)
-            $0.height.equalTo(80)
-            $0.horizontalEdges.equalToSuperview().inset(16)
-        }
-
-        benefitTitleLabel.snp.makeConstraints {
-            $0.top.equalTo(stockIndexcollectionView.snp.bottom).offset(40)
-            $0.left.equalTo(safeAreaLayoutGuide).offset(20)
-        }
-        
-        benefitVerticalTableView.snp.makeConstraints {
-            $0.top.equalTo(benefitTitleLabel.snp.bottom).offset(20)
-            $0.height.equalTo(400)
-            $0.left.right.equalToSuperview().inset(20)
-            $0.bottom.equalToSuperview().offset(-40)
-        }
+//        benefitTitleLabel.snp.makeConstraints {
+//            $0.top
+//        }
+//        
+//        benefitVerticalTableView.snp.makeConstraints {
+//            $0.top.equalTo(benefitTitleLabel.snp.bottom).offset(20)
+//            $0.height.equalTo(400)
+//            $0.left.right.equalToSuperview().inset(20)
+//            $0.bottom.equalToSuperview().offset(-40)
+//        }
     }
 }
